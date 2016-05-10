@@ -1,7 +1,0 @@
-username:aaeviru
-password:lbs1014
-address:aaeviru@i.softbank.jp
-imap_server:imap.softbank.jp
-smtp_server:smtp.softbank.jp
-maillist:ogiyuka.ippaiwarae216@mls.ngt48.com
-ogiyuka.ippaiwarae216@mls.ngt48.com:aaeviru@gmail.com

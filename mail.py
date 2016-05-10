@@ -86,7 +86,6 @@ while True:
 
 		rv, data = m.select(mailbox)
     		if rv == 'OK':
-        		print "Processing mailbox...\n"
 			for mail_add in setup["maillist"].split(','):
 				mail_add = mail_add.strip('\n')
 	        		process_mailbox(m,s,mail_add,setup["address"],setup[mail_add].split(','),maillist[mail_add])

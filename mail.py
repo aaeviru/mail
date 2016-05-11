@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import imaplib, smtplib
+import imaplib, smtplib, socket
 import email
 from email import header
 import quopri
@@ -19,7 +19,7 @@ for line in fset:
 fset.close()
 mailbox = "INBOX"
 
-def process_mailbox(M,S,mail_add,from_add,to_add,maillist):
+def process_mailbox(M,mail_add,from_add,to_add,maillist):
     """
     Do something with emails messages in the folder.  
     For the sake of this example, print some headers.
@@ -29,7 +29,6 @@ def process_mailbox(M,S,mail_add,from_add,to_add,maillist):
     if rv != 'OK':
         print "No messages found!"
         return
-
     for num in data[0].split():
         rv, data = M.fetch(num, '(RFC822)')
         if rv != 'OK':
@@ -39,28 +38,22 @@ def process_mailbox(M,S,mail_add,from_add,to_add,maillist):
         msg = email.message_from_string(data[0][1])
         decode = header.decode_header(msg['Subject'])[0]
         subject = decode[0]
+	if msg['Date'] == None:
+		continue
 	if (subject,msg['Date']) in maillist:
 		continue
 	else:
+		s = smtplib.SMTP_SSL(setup["smtp_server"])
+                s.login(setup["username"],setup["password"] )
 		maillist.add((subject,msg['Date']))
         	print 'Message %s: %s' % (num, subject)
 	        print 'Raw Date:', msg['Date']
         	print 'From:', msg['From']
 		msg.replace_header("From",from_add)
 		msg.replace_header("To",','.join(to_add))
-		S.sendmail(from_add,to_add,msg.as_string())
+		s.sendmail(from_add,to_add,msg.as_string())
+		s.quit()
             
-
-m = imaplib.IMAP4_SSL(setup["imap_server"])
-s = smtplib.SMTP_SSL(setup["smtp_server"])
-# IMAP,SMTPにログイン
-try:
-    rv, data = m.login(setup["username"],setup["password"] )
-except imaplib.IMAP4.error:
-    print "LOGIN FAILED!!! "
-    sys.exit(1)
-s.login(setup["username"],setup["password"] )
-print rv, data
 
 #rv, mailboxes = m.list()
 #if rv == 'OK':
@@ -80,18 +73,21 @@ for mail_add in setup["maillist"].split(','):
 				print d
 				maillist[mail_add].add(tuple(line.split('/')))
 		fin.close()
-
 while True:
 	try:
-
+		m = imaplib.IMAP4_SSL(setup["imap_server"])
+		rv, data = m.login(setup["username"],setup["password"] )
 		rv, data = m.select(mailbox)
     		if rv == 'OK':
 			for mail_add in setup["maillist"].split(','):
 				mail_add = mail_add.strip('\n')
-	        		process_mailbox(m,s,mail_add,setup["address"],setup[mail_add].split(','),maillist[mail_add])
+	        		process_mailbox(m,mail_add,setup["address"],setup[mail_add].split(','),maillist[mail_add])
     		else:
         		print "ERROR: Unable to open mailbox ", rv
-    		time.sleep(5)
+		m.close()
+		m.logout()
+
+    		time.sleep(60)
 	except KeyboardInterrupt:
 		print "exit"
 		for mail_add in setup["maillist"].split(','):
@@ -102,8 +98,8 @@ while True:
 		break
 	except socket.error as msg:
 		print msg
-		m.login(setup["username"],setup["password"] )
-		s.login(setup["username"],setup["password"] )
-m.close()
-m.logout()
-s.close()
+		for mail_add in setup["maillist"].split(','):
+                        fout = open(mail_add,"w")
+                        for tmp in maillist[mail_add]:
+                                fout.write(tmp[0] + "/" + tmp[1] + "\n")
+                        fout.close()

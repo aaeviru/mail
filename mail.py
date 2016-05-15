@@ -24,8 +24,8 @@ def process_mailbox(M,mail_add,from_add,to_add,maillist):
     Do something with emails messages in the folder.  
     For the sake of this example, print some headers.
     """
-    #rv, data = M.search(None, '(ON \"' + date.today().strftime("%d-%b-%Y") + '\")','(FROM \"' + mail_add + '\")')
-    rv, data = M.search(None, '(FROM \"' + mail_add + '\")')
+    rv, data = M.search(None, '(ON \"' + date.today().strftime("%d-%b-%Y") + '\")','(FROM \"' + mail_add + '\")')
+    #rv, data = M.search(None, '(FROM \"' + mail_add + '\")')
     if rv != 'OK':
         print "No messages found!"
         return

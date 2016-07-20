@@ -75,6 +75,7 @@ for mail_add in setup["maillist"].split(','):
 		fin.close()
 while True:
 	try:
+                sys.stdout.flush()
 		m = imaplib.IMAP4_SSL(setup["imap_server"])
 		rv, data = m.login(setup["username"],setup["password"] )
 		rv, data = m.select(mailbox)
@@ -105,5 +106,3 @@ while True:
                         fout.close()
 	except imaplib.IMAP4.error as err:
 		print err
-		m.close()
-		m.logout()

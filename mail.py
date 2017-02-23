@@ -49,6 +49,7 @@ def process_mailbox(M,mail_add,from_add,to_add,maillist):
         	print 'Message %s: %s' % (num, subject)
 	        print 'Raw Date:', msg['Date']
         	print 'From:', msg['From']
+		msg.replace_header("Subject",msg["From"]+":"+msg["Subject"])
 		msg.replace_header("From",from_add)
 		msg.replace_header("To",','.join(to_add))
 		s.sendmail(from_add,to_add,msg.as_string())
